@@ -12,7 +12,8 @@ import neologdn
 import numpy as np
 import pandas as pd
 from keras.layers import Conv1D, Dense, Dropout, Flatten, MaxPooling1D
-from keras.layers.recurrent import LSTM
+# from keras.layers.recurrent import LSTM
+from tensorflow.keras.layers import LSTM
 from keras.models import Sequential
 from mlxtend.regressor import StackingCVRegressor
 from selenium import webdriver
@@ -99,7 +100,9 @@ KF = 5  # K分割（K=5）
 
 predict_result = np.zeros((vsample - H) - PERIOD)
 sqe_result = np.zeros((vsample - H) - PERIOD)
+print((vsample - H) - PERIOD)
 for i in range((vsample - H) - PERIOD):
+    print(i)
     # 訓練データの指定
     train_xx = data_x[i : i + PERIOD]
     train_y = data_y[H + i : H + i + PERIOD]
@@ -127,7 +130,7 @@ for i in range((vsample - H) - PERIOD):
             counter = counter + 1
     op_hpi = pd.DataFrame(np.average(cvbox, axis=0)).idxmin()
     op_lambda = lasso_lambda[op_hpi]
-    lasso_best = linear_model.Lasso(alpha=op_lambda, fit_intercept=True)
+    lasso_best = linear_model.Lasso(alpha=op_lambda[0], fit_intercept=True)     # [0]追加
     model_best = lasso_best.fit(train_x, train_y)
     forecast = model_best.predict(test_x)
     predict_result[i] = forecast
@@ -178,7 +181,7 @@ for i in range((vsample - H) - PERIOD):
             counter = counter + 1
     op_hpi = pd.DataFrame(np.average(cvbox, axis=0)).idxmin()
     op_lambda = ridge_lambda[op_hpi]
-    ridge_best = linear_model.Ridge(alpha=op_lambda, fit_intercept=True)
+    ridge_best = linear_model.Ridge(alpha=op_lambda[0], fit_intercept=True)     # [0]追加
     model_best = ridge_best.fit(train_x, train_y)
     forecast = model_best.predict(test_x)
     predict_result[i] = forecast
@@ -189,7 +192,7 @@ predict_result2_list.append(predict_result)
 sqe_result2_list.append(sqe_result)
 
 
-
+"""
 # 5-6
 # エラスティックネット
 predict_result3_list, sqe_result3_list = [], []
@@ -326,7 +329,7 @@ for i in range((vsample - H) - PERIOD):
     predict_result[i] = forecast
     sqe = (test_y - forecast) ** 2
     sqe_result[i] = sqe.sum(axis=0)
-    
+
 predict_result4_list.append(predict_result)
 sqe_result4_list.append(sqe_result)
 
@@ -730,7 +733,7 @@ for i in range((vsample - H - N_STEP) - PERIOD):
             use_bias=True,
         )
     )
-    model.add(MaxPooling1D(pool_size=2))    
+    model.add(MaxPooling1D(pool_size=2))
     model.add(Flatten())
     model.add(Dense(6, activation="relu"))
     model.add(Dropout(rate=0.1))
@@ -1078,3 +1081,4 @@ plt.plot(dti[H + PERIOD :], np.ravel(predict_result_list_lgbm), label="ブース
 plt.plot(dti[H + PERIOD :], np.ravel(predict_result_list_stk), label="スタッキング", color="grey", linestyle="dashdot")
 plt.legend(loc="lower center", fontsize=16)
 plt.tick_params(labelsize=16)
+"""
